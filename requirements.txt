@@ -1,0 +1,4 @@
+transformers==4.36.2
+librosa==0.10.1
+soundfile==0.12.1
+python-telegram-bot==20.8
