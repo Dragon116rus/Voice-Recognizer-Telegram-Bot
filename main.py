@@ -1,6 +1,6 @@
 import logging
 import tempfile
-from path import Path
+from pathlib import Path
 
 from telegram import ForceReply, Update
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
@@ -34,10 +34,25 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     await update.message.reply_text("Help!")
 
 def get_transriber_function():
+    """
+    Get a transcriber function using the WhisperTranscriber.
+
+    Returns:
+        callable: An asynchronous function that transcribes voice messages to text.
+    """
     transcriber = WhisperTranscriber(model_name="openai/whisper-small", model_sampling_rate=16_000)
     
     async def transcriber_function(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-        """Echo the user message."""
+        """
+        Transcribe the voice message and reply with the generated text.
+
+        Args:
+            update (telegram.Update): The incoming Telegram update.
+            context (telegram.ext.ContextTypes.DEFAULT_TYPE): The context passed by the handler.
+
+        Returns:
+            None
+        """
         new_file = await update.message.effective_attachment.get_file()
         with tempfile.TemporaryDirectory() as temp_dir:
             file_path = Path(temp_dir) / 'file_name.ogg'
