@@ -1,26 +1,28 @@
 import argparse
 import json
+import time
 import librosa
 import numpy as np
-from transformers import WhisperProcessor, WhisperForConditionalGeneration
+from optimum.intel.openvino import OVModelForSpeechSeq2Seq
+from transformers import AutoProcessor
 
 class WhisperTranscriber:
     """
     A class for transcribing audio using the Whisper ASR model.
     """
 
-    def __init__(self, model_name: str = "openai/whisper-small", model_sampling_rate: int = 16000):
+    def __init__(self, model_name: str = "openai/whisper-small", model_sampling_rate: int = 16_000):
         """
         Initialize the WhisperTranscriber instance.
 
         Parameters:
-            - model_name (str, optional): The name or path of the Whisper ASR model (default is "openai/whisper-small").
-            - target_sr (int, optional): Target sampling rate for resampling audio (default is 16000).
+            - model_name (str, optional): The name or path of the Whisper ASR model.
+            - target_sr (int, optional): Target sampling rate for resampling audio.
         """
         self.processor, self.model = self.load_model_and_processor(model_name)
         self.model_sampling_rate = model_sampling_rate
 
-    def load_model_and_processor(self, model_name: str):
+    def load_model_and_processor(self, model_name: str) -> tuple[AutoProcessor, OVModelForSpeechSeq2Seq]:
         """
         Load the Whisper ASR model and processor.
 
@@ -30,9 +32,9 @@ class WhisperTranscriber:
         Returns:
             Tuple: Tuple containing the processor and model instances.
         """
-        processor = WhisperProcessor.from_pretrained(model_name)
-        model = WhisperForConditionalGeneration.from_pretrained(model_name)
-        model.config.forced_decoder_ids = None
+        processor = AutoProcessor.from_pretrained(model_name)
+        model = OVModelForSpeechSeq2Seq.from_pretrained(model_name, export=False, cache_dir=".cache")
+
         return processor, model
 
     def process_audio_file(self, audio_path: str) -> np.ndarray:
@@ -59,9 +61,11 @@ class WhisperTranscriber:
         Returns:
             str: Transcription result.
         """
+        start = time.time() 
         input_features = self.processor(data, sampling_rate=self.model_sampling_rate, return_tensors="pt").input_features
         predicted_ids = self.model.generate(input_features)
         transcription = self.processor.batch_decode(predicted_ids, skip_special_tokens=True)
+        print(f"time: {time.time() - start}")
         return transcription
 
     def transcribe_from_file(self, audio_path: str) -> str:

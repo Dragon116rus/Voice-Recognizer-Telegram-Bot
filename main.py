@@ -5,6 +5,7 @@ from pathlib import Path
 from telegram import ForceReply, Update
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
 
+from default_configs import DEFAULT_MODEL
 from speech_to_text_converter import WhisperTranscriber
 from secret import api_token
 
@@ -40,7 +41,7 @@ def get_transriber_function():
     Returns:
         callable: An asynchronous function that transcribes voice messages to text.
     """
-    transcriber = WhisperTranscriber(model_name="openai/whisper-small", model_sampling_rate=16_000)
+    transcriber = WhisperTranscriber(model_name=DEFAULT_MODEL, model_sampling_rate=16_000)
     
     async def transcriber_function(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """
