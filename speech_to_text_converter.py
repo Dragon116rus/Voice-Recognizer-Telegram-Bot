@@ -4,7 +4,7 @@ import time
 import librosa
 import numpy as np
 from optimum.intel.openvino import OVModelForSpeechSeq2Seq
-from transformers import AutoProcessor
+from transformers import AutoProcessor, WhisperForConditionalGeneration
 
 class WhisperTranscriber:
     """
@@ -33,8 +33,10 @@ class WhisperTranscriber:
             Tuple: Tuple containing the processor and model instances.
         """
         processor = AutoProcessor.from_pretrained(model_name)
-        model = OVModelForSpeechSeq2Seq.from_pretrained(model_name, export=False, cache_dir=".cache")
-
+        try:
+            model = OVModelForSpeechSeq2Seq.from_pretrained(model_name, export=False, cache_dir=".cache")
+        except Exception:
+            model = OVModelForSpeechSeq2Seq.from_pretrained(model_name, export=True, cache_dir=".cache")
         return processor, model
 
     def process_audio_file(self, audio_path: str) -> np.ndarray:
@@ -61,11 +63,9 @@ class WhisperTranscriber:
         Returns:
             str: Transcription result.
         """
-        start = time.time() 
         input_features = self.processor(data, sampling_rate=self.model_sampling_rate, return_tensors="pt").input_features
         predicted_ids = self.model.generate(input_features)
         transcription = self.processor.batch_decode(predicted_ids, skip_special_tokens=True)
-        print(f"time: {time.time() - start}")
         return transcription
 
     def transcribe_from_file(self, audio_path: str) -> str:

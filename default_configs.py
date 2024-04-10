@@ -1,1 +1,0 @@
-DEFAULT_MODEL="lorenzoncina/whisper-small-ru"
