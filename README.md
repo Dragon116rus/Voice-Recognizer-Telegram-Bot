@@ -14,7 +14,7 @@ This Python script implements a Telegram bot that transcribes voice messages to 
 1. Install the required dependencies:
 
    ```bash
-   pip install python-telegram-bot openai-whisper-asr path
+   pip install -r requirements.txt
    ```
 
 2. Create a Telegram bot using BotFather on Telegram and obtain the API token.
@@ -27,11 +27,13 @@ api_token = 'YOUR_TELEGRAM_API_TOKEN'
 
 ## Usage
 
-Run the script by executing the following command:
+Run the script by executing the following commands:
 
 ```python
+python download_models.py
 python main.py
 ```
+or use Dockerfile to build image.
 
 The bot will be active and respond to commands and voice messages on Telegram.
 
